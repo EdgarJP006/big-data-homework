@@ -1,0 +1,56 @@
+hdfs dfs -ls /user/impala/input
+
+impala-shell
+
+CREATE DATABASE IF NOT EXISTS dbcar;
+CREATE DATABASE IF NOT EXISTS dbcar LOCATION '/user/impala/impalastore.db';
+
+CREATE TABLE IF NOT EXISTS ElectricCar (
+    VIN STRING,
+    County STRING,
+    City STRING,
+    State STRING,
+    PostalCode INT,
+    ModelYear INT,
+    Make STRING,
+    Model STRING,
+    ElectricVehicleType STRING,
+    CleanAlternativeFuelVehicleCAFVEligibility STRING,
+    ElectricRange INT,
+    BaseMSRP INT,
+    LegislativeDistrict INT,
+    DOLVehicleID INT,
+    VehicleLocation STRING,
+    ElectricUtility STRING,
+    X2020CensusTract FLOAT
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LOCATION '/user/impala/input/Electric_Vehicle_Population_Data.csv';
+
+
+
+LOAD DATA INPATH '/user/impala/input/Electric_Vehicle_Population_Data.csv' OVERWRITE INTO TABLE ElectricCar;
+´
+SELECT ModelYear, COUNT(*) AS TotalCars
+FROM ElectricCar
+GROUP BY ModelYear;
+
+
+Operación de proyección
+
+SELECT City, Model, ElectricVehicleType FROM ElectricCar;
+
+Operador de selección
+
+SELECT City, Model, ElectricVehicleType
+FROM ElectricCar
+WHERE ModelYear >= 2010 AND ModelYear <= 2020;
+
+
+Combinado
+
+SELECT City, Model, ElectricVehicleType, COUNT(*) AS TotalCars
+FROM ElectricCar
+WHERE (City = 'Edmonds' OR City = 'Seattle') AND ModelYear BETWEEN 2010 AND 2020
+GROUP BY City, Model, ElectricVehicleType;
+
+

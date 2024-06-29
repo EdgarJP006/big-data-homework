@@ -1,0 +1,159 @@
+hdfs dfs -put /var/tmp/materialPig/jsbach_chorals_harmony.csv input
+
+hdfs dfs -ls input
+
+
+Choral_ID,Event_number,C,C#/Db,D,D#/Eb,E,F,F#/Gb,G,G#/Ab,A,A#/Bb,B,Bass,Meter,Chord_label
+-- Cargar el conjunto de datos
+jsbach = load 'input/jsbach_chorals_harmony.csv' USING PigStorage(',') AS (Choral_ID:chararray, Event_number:chararray,C:chararray,C_sharp_Db:chararray,D:chararray,D_sharp_Eb:chararray,E:chararray,   F:chararray,F_sharp_Gb:chararray,G:chararray,G_sharp_Ab:chararray,A:chararray,A_sharp_Bb:chararray, B:chararray,  Bass:chararray,  Meter:int, Chord_label:chararray);
+
+-- Mostrar el esquema cargado
+DESCRIBE jsbach;
+
+-- Mostrar algunas filas para verificar
+DUMP jsbach;
+
+Opcion 1:
+
+x = GROUP jsbach BY Meter;
+result = FOREACH x GENERATE group AS Meter, data AS valores;
+DUMP result;
+
+
+Opcion 2:
+
+jsbach_unique_values = FOREACH jsbach GENERATE
+    Choral_ID,
+    Event_number,
+    C,
+    C_sharp_Db,
+    D,
+    D_sharp_Eb,
+    E,
+    F,
+    F_sharp_Gb,
+    G,
+    G_sharp_Ab,
+    A,
+    A_sharp_Bb,
+    B,
+    Bass,
+    Meter,
+    Chord_label,
+    COUNT(DISTINCT *) AS unique_values_count;
+
+
+jsbach_sorted = ORDER jsbach_unique_values BY unique_values_count DESC;
+
+
+top_3_variability = LIMIT jsbach_sorted 3;
+
+-- M
+DUMP top_3_variability;
+
+
+
+Opcion 2:
+
+
+grouped_data = GROUP data BY clave;
+
+
+result = FOREACH grouped_data GENERATE group AS clave, data AS valores;
+
+
+DUMP result;
+
+Opcion 3:
+-- Cargar los datos
+jsbach = LOAD 'input/jsbach_chorals_harmony.csv' USING PigStorage(',') AS (
+    Choral_ID:chararray,
+    Event_number:chararray,
+    C:chararray,
+    C_sharp_Db:chararray,
+    D:chararray,
+    D_sharp_Eb:chararray,
+    E:chararray,
+    F:chararray,
+    F_sharp_Gb:chararray,
+    G:chararray,
+    G_sharp_Ab:chararray,
+    A:chararray,
+    A_sharp_Bb:chararray,
+    B:chararray,
+    Bass:chararray,
+    Meter:int,
+    Chord_label:chararray
+);
+
+
+grouped_data = GROUP jsbach BY Choral_ID;
+
+result = FOREACH grouped_data GENERATE group AS Choral_ID, jsbach AS Data;
+
+gpr_all = group result all;
+
+DUMP result;
+
+grouped_data = GROUP jsbach BY Event_number;
+
+result = FOREACH grouped_data GENERATE group AS Choral_ID, jsbach AS Data;
+
+gpr_all = group result all;
+
+DUMP result;
+
+Opción 4:
+
+jsbach_variability = FOREACH jsbach GENERATE
+    Choral_ID,
+    Event_number,
+    C,
+    C_sharp_Db,
+    D,
+    D_sharp_Eb,
+    E,
+    F,
+    F_sharp_Gb,
+    G,
+    G_sharp_Ab,
+    A,
+    A_sharp_Bb,
+    B,
+    Bass,
+    Meter,
+    Chord_label,
+    COUNT(*) AS count,
+    COUNT_DISTINCT(C) AS count_distinct_C,
+    COUNT_DISTINCT(C_sharp_Db) AS count_distinct_C_sharp_Db,
+    COUNT_DISTINCT(D) AS count_distinct_D,
+    -- Repite COUNT_DISTINCT para las otras características
+    -- Calcula la variabilidad de cada característica como la razón entre la cantidad de valores distintos y la cantidad total de valores
+    (double)count_distinct_C / (double)count AS variability_C,
+    (double)count_distinct_C_sharp_Db / (double)count AS variability_C_sharp_Db,
+    (double)count_distinct_D / (double)count AS variability_D,
+    -- Repite para las otras características
+;
+
+-- Ordena las características por variabilidad en orden descendente
+jsbach_sorted = ORDER jsbach_variability BY variability_C DESC, variability_C_sharp_Db DESC, variability_D DESC, ...;
+
+-- Limita los resultados a las tres características con mayor variabilidad
+top_3_variability = LIMIT jsbach_sorted 3;
+
+-- Muestra los resultados
+DUMP top_3_variability;
+
+
+################### repuesta del profesor
+
+jsbach = load 'input/jsbach_chorals_harmony.csv' USING PigStorage(',') AS (Choral_ID:chararray, Event_number:chararray,C:chararray,C_sharp_Db:chararray,D:chararray,D_sharp_Eb:chararray,E:chararray,   F:chararray,F_sharp_Gb:chararray,G:chararray,G_sharp_Ab:chararray,A:chararray,A_sharp_Bb:chararray, B:chararray,  Bass:chararray,  Meter:int, Chord_label:chararray);
+
+/* Proyecto sobre la variable a la que quiero calcular la variabilidad */
+Choral_ID = foreach measure generate Choral_ID;
+/* Creo grupos (agrupo) por valores iguales de la variable */
+groupid = group Choral_ID by Choral_ID;
+/* Creo un único grupo (agrupo) con todos los grupos creados para poder contarlos */
+groupallids = group groupid all;
+/* Cuento el número de elementos agrupados en el único grupo (todos), generando un individuo con dos valores: una cadena de caracteres con el nombre de la variable y la cuenta de los elementos */
+totalids = foreach groupallids generate 'Choral_ID' as var, COUNT (groupid.id) as many;

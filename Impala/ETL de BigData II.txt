@@ -1,0 +1,220 @@
+ETL de BigData II
+
+****Carpeta donde tengo los ficheros
+cd /var/tmp/materialPig
+ls - l /var/tmp/materialPig
+
+**** Verificando ficheros
+hdfs dfs -ls input
+hdfs dfs -ls /user/impala/input
+
+####
+    VIN STRING,
+    County STRING,
+    City STRING,
+    State STRING,
+    PostalCode INT,
+    ModelYear INT,
+    Make STRING,
+    Model STRING,
+    ElectricVehicleType STRING,
+    CleanAlternativeFuelVehicleCAFVEligibility STRING,
+    ElectricRange INT,
+    BaseMSRP INT,
+    LegislativeDistrict INT,
+    DOLVehicleID INT,
+    VehicleLocation STRING,
+    ElectricUtility STRING,
+    X2020CensusTract FLOAT
+
+
+**** Realizar un análisis de la variabilidad de cada característica (calcular el número de valores distintos para cada característica de la población) y es necesario indicar las tres características con menor variabilidad (menor número de valores distintos).
+#Carga
+data = LOAD '/user/impala/input/Electric_Vehicle_Population_Data.csv' USING PigStorage(',') AS ( VIN: chararray, County: chararray, City: chararray, State: chararray, PostalCode: int, ModelYear: int, Make: chararray, Model: chararray, ElectricVehicleType: chararray, CleanAlternativeFuelVehicleCAFVEligibility: chararray, ElectricRange: int, BaseMSRP: int, LegislativeDistrict: int, DOLVehicleID: int, VehicleLocation: chararray, ElectricUtility: chararray, X2020CensusTract: float );
+
+#Filtrado
+variedad = FOREACH data GENERATE COUNT(DISTINCT VIN) AS VIN_variedad, COUNT(DISTINCT County) AS County_variedad, COUNT(DISTINCT City) AS City_variedad, COUNT(DISTINCT State) AS State_variedad, COUNT(DISTINCT PostalCode) AS PostalCode_variedad, COUNT(DISTINCT ModelYear) AS ModelYear_variedad, COUNT(DISTINCT Make) AS Make_variedad, COUNT(DISTINCT Model) AS Model_variedad, COUNT(DISTINCT ElectricVehicleType) AS ElectricVehicleType_variedad, COUNT(DISTINCT CleanAlternativeFuelVehicleCAFVEligibility) AS CAFV_variedad, COUNT(DISTINCT ElectricRange) AS ElectricRange_variedad, COUNT(DISTINCT BaseMSRP) AS BaseMSRP_variedad, COUNT(DISTINCT LegislativeDistrict) AS LegislativeDistrict_variedad, COUNT(DISTINCT DOLVehicleID) AS DOLVehicleID_variedad, COUNT(DISTINCT VehicleLocation) AS VehicleLocation_variedad, COUNT(DISTINCT ElectricUtility) AS ElectricUtility_variedad, COUNT(DISTINCT X2020CensusTract) AS X2020CensusTract_variedad;
+
+### intento dos
+-- Carga de los datos del conjunto de datos
+data = LOAD '/user/impala/input/Electric_Vehicle_Population_Data.csv' USING PigStorage(',') AS ( VIN: chararray, County: chararray, City: chararray, State: chararray, PostalCode: int, ModelYear: int, Make: chararray, Model: chararray, ElectricVehicleType: chararray, CleanAlternativeFuelVehicleCAFVEligibility: chararray, ElectricRange: int, BaseMSRP: int, LegislativeDistrict: int, DOLVehicleID: int, VehicleLocation: chararray, ElectricUtility: chararray, X2020CensusTract: float );
+
+-- Proyección sobre la variable a la que se quiere calcular la variabilidad
+id = foreach data generate VIN;
+groupVin = group id by VIN;
+groupallVin = group groupVin all;
+totalVin = foreach groupallVin generate 'VIN' as var, COUNT(groupVin.id) as many;
+
+County = foreach data generate County;
+groupCounty = group County by County;
+groupallCounty = group groupCounty all;
+totalCounty = foreach groupallCounty generate 'County' as var, COUNT(groupCounty.County) as many;
+
+City = foreach data generate City;
+groupCity = group City by City;
+groupallCity = group groupCity all;
+totalCity = foreach groupallCity generate 'City' as var, COUNT(groupCity.City) as many;
+
+State = foreach data generate State;
+groupState = group State by State;
+groupallState = group groupState all;
+totalState = foreach groupallState generate 'State' as var, COUNT(groupState.State) as many;
+
+PostalCode = foreach data generate PostalCode;
+groupPostalCode = group PostalCode by PostalCode;
+groupallPostalCode = group groupPostalCode all;
+totalPostalCode = foreach groupallPostalCode generate 'PostalCode' as var, COUNT(groupPostalCode.PostalCode) as many;
+
+ModelYear = foreach data generate ModelYear;
+groupModelYear = group ModelYear by ModelYear;
+groupallModelYear = group groupModelYear all;
+totalModelYear = foreach groupallModelYear generate 'ModelYear' as var, COUNT(groupModelYear.ModelYear) as many;
+
+Make = foreach data generate Make;
+groupMake = group Make by Make;
+groupallMake = group groupMake all;
+totalMake = foreach groupallMake generate 'Make' as var, COUNT(groupMake.Make) as many;
+
+Model = foreach data generate Model;
+groupModel = group Model by Model;
+groupallModel = group groupModel all;
+totalModel = foreach groupallModel generate 'Model' as var, COUNT(groupModel.Model) as many;
+
+ElectricVehicleType = foreach data generate ElectricVehicleType;
+groupElectricVehicleType = group ElectricVehicleType by ElectricVehicleType;
+groupallElectricVehicleType = group groupElectricVehicleType all;
+totalElectricVehicleType = foreach groupallElectricVehicleType generate 'ElectricVehicleType' as var, COUNT(groupElectricVehicleType.ElectricVehicleType) as many;
+
+CleanAlternativeFuelVehicleCAFVEligibility = foreach data generate CleanAlternativeFuelVehicleCAFVEligibility;
+groupCAFVEligibility = group CleanAlternativeFuelVehicleCAFVEligibility by CleanAlternativeFuelVehicleCAFVEligibility;
+groupallCAFVEligibility = group groupCAFVEligibility all;
+totalCAFVEligibility = foreach groupallCAFVEligibility generate 'CleanAlternativeFuelVehicleCAFVEligibility' as var, COUNT(groupCAFVEligibility.CleanAlternativeFuelVehicleCAFVEligibility) as many;
+
+ElectricRange = foreach data generate ElectricRange;
+groupElectricRange = group ElectricRange by ElectricRange;
+groupallElectricRange = group groupElectricRange all;
+totalElectricRange = foreach groupallElectricRange generate 'ElectricRange' as var, COUNT(groupElectricRange.ElectricRange) as many;
+
+BaseMSRP = foreach data generate BaseMSRP;
+groupBaseMSRP = group BaseMSRP by BaseMSRP;
+groupallBaseMSRP = group groupBaseMSRP all;
+totalBaseMSRP = foreach groupallBaseMSRP generate 'BaseMSRP' as var, COUNT(groupBaseMSRP.BaseMSRP) as many;
+
+LegislativeDistrict = foreach data generate LegislativeDistrict;
+groupLegislativeDistrict = group LegislativeDistrict by LegislativeDistrict;
+groupallLegislativeDistrict = group groupLegislativeDistrict all;
+totalLegislativeDistrict = foreach groupallLegislativeDistrict generate 'LegislativeDistrict' as var, COUNT(groupLegislativeDistrict.LegislativeDistrict) as many;
+
+DOLVehicleID = foreach data generate DOLVehicleID;
+groupDOLVehicleID = group DOLVehicleID by DOLVehicleID;
+groupallDOLVehicleID = group groupDOLVehicleID all;
+totalDOLVehicleID = foreach groupallDOLVehicleID generate 'DOLVehicleID' as var, COUNT(groupDOLVehicleID.DOLVehicleID) as many;
+
+VehicleLocation = foreach data generate VehicleLocation;
+groupVehicleLocation = group VehicleLocation by VehicleLocation;
+groupallVehicleLocation = group groupVehicleLocation all;
+totalVehicleLocation = foreach groupallVehicleLocation generate 'VehicleLocation' as var, COUNT(groupVehicleLocation.VehicleLocation) as many;
+
+ElectricUtility = foreach data generate ElectricUtility;
+groupElectricUtility = group ElectricUtility by ElectricUtility;
+groupallElectricUtility = group groupElectricUtility all;
+totalElectricUtility = foreach groupallElectricUtility generate 'ElectricUtility' as var, COUNT(groupElectricUtility.ElectricUtility) as many;
+
+X2020CensusTract = foreach data generate X2020CensusTract;
+groupX2020CensusTract = group X2020CensusTract by X2020CensusTract;
+groupallX2020CensusTract = group groupX2020CensusTract all;
+totalX2020CensusTract = foreach groupallX2020CensusTract generate 'X2020CensusTract' as var, COUNT(groupX2020CensusTract.X2020CensusTract) as many;
+
+-- Unir todos los individuos de tipo pareja (cadena de caracteres con el nombre de la variable, cuenta de valores distintos de la variable) en una única población
+allvars = UNION totalVin, totalCounty, totalCity, totalState, totalPostalCode, totalModelYear, totalMake, totalModel, totalElectricVehicleType, totalCAFVEligibility, totalElectricRange, totalBaseMSRP, totalLegislativeDistrict, totalDOLVehicleID, totalVehicleLocation, totalElectricUtility, totalX2020CensusTract;
+
+-- Ordenar la población de parejas por orden descendente sobre la cuenta del número de valores distintos
+allvarordered = ORDER allvars BY many DESC;
+
+-- Devolver las tres parejas (cadena de caracteres con el nombre de la variable, cuenta de valores distintos de la variable) con menores valores distintos de la variable
+smallest3 = LIMIT allvarordered 3;
+
+-- Mostrar el resultado
+DUMP smallest3;
+
+
+
+### intento 3
+-- Carga de los datos del conjunto de datos
+data = LOAD '/user/impala/input/Electric_Vehicle_Population_Data.csv' USING PigStorage(',') AS (
+    VIN: chararray,
+    County: chararray,
+    City: chararray,
+    State: chararray,
+    PostalCode: int,
+    ModelYear: int,
+    Make: chararray,
+    Model: chararray,
+    ElectricVehicleType: chararray,
+    CleanAlternativeFuelVehicleCAFVEligibility: chararray,
+    ElectricRange: int,
+    BaseMSRP: int,
+    LegislativeDistrict: int,
+    DOLVehicleID: int,
+    VehicleLocation: chararray,
+    ElectricUtility: chararray,
+    X2020CensusTract: float
+);
+
+-- Lista de todas las columnas
+all_columns = {County, City, State, PostalCode, ModelYear, Make, Model, ElectricVehicleType, CleanAlternativeFuelVehicleCAFVEligibility, ElectricRange, BaseMSRP, LegislativeDistrict, DOLVehicleID, VehicleLocation, ElectricUtility, X2020CensusTract};
+
+-- Inicializar una variable para almacenar los resultados
+results = foreach all_columns generate COUNT(DISTINCT $0) as distinct_count, COUNT($0) as total_count, $0 as column_name;
+
+-- Ordenar los resultados por el número de valores distintos en orden ascendente
+sorted_results = ORDER results BY distinct_count ASC;
+
+-- Tomar las tres características con menor variabilidad
+smallest3 = LIMIT sorted_results 3;
+
+-- Mostrar el resultado
+DUMP smallest3;
+
+### intento 4
+-- Carga de los datos del conjunto de datos
+data = LOAD '/user/impala/input/Electric_Vehicle_Population_Data.csv' USING PigStorage(',') AS (
+    VIN: chararray,
+    County: chararray,
+    City: chararray,
+    State: chararray,
+    PostalCode: int,
+    ModelYear: int,
+    Make: chararray,
+    Model: chararray,
+    ElectricVehicleType: chararray,
+    CleanAlternativeFuelVehicleCAFVEligibility: chararray,
+    ElectricRange: int,
+    BaseMSRP: int,
+    LegislativeDistrict: int,
+    DOLVehicleID: int,
+    VehicleLocation: chararray,
+    ElectricUtility: chararray,
+    X2020CensusTract: float
+);
+
+-- Lista de todas las columnas
+all_columns = FOREACH data GENERATE County, City, State, PostalCode, ModelYear, Make, Model, ElectricVehicleType, CleanAlternativeFuelVehicleCAFVEligibility, ElectricRange, BaseMSRP, LegislativeDistrict, DOLVehicleID, VehicleLocation, ElectricUtility, X2020CensusTract;
+
+-- Inicializar una variable para almacenar los resultados
+results = FOREACH all_columns {
+    distinct_count = DISTINCT $0;
+    GENERATE COUNT(distinct_count) as distinct_count, COUNT($0) as total_count, $0 as column_name;
+};
+
+-- Ordenar los resultados por el número de valores distintos en orden ascendente
+sorted_results = ORDER results BY distinct_count ASC;
+
+-- Tomar las tres características con menor variabilidad
+smallest3 = LIMIT sorted_results 3;
+
+-- Mostrar el resultado
+DUMP smallest3;
+
+
+
